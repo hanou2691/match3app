@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<levels>
+    <level
+        id = "1"
+        nbMoves = "6"
+        victoryPoints = "800"
+        x = "8"
+        y = "5"/>
+    <level
+        id = "2"
+        nbMoves = "10"
+        victoryPoints = "1200"
+        x = "8"
+        y ="6"/>
+    <level
+        id = "3"
+        nbMoves = "10"
+        victoryPoints = "1400"
+        x = "7"
+        y = "7"/>
+    <level
+        id = "4"
+        nbMoves = "10"
+        victoryPoints = "1800"
+        x = "7"
+        y = "8"/>
+    <level
+        id = "5"
+        nbMoves = "10"
+        victoryPoints = "2200"
+        x = "9"
+        y = "4"/>
+</levels>
+

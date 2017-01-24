@@ -24,4 +24,5 @@ public class GameView extends SurfaceView {
     public boolean onTouchEvent(MotionEvent event) {
         return super.onTouchEvent(event);
     }
+
 }
