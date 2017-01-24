@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">match3app</string>
+    <string name="menu_title">Match 3</string>
+    <string name="menu_demarrer">Demarrer</string>
+    <string name="menu_regles">Regles du jeu</string>
+    <string name="menu_quitter">Quitter</string>
+    <string name="level_1">Level 1</string>
+    <string name="level_2">Level 2</string>
+    <string name="level_3">Level 3</string>
+    <string name="level_4">Level 4</string>
+    <string name="level_5">Level 5</string>
+    <string name="text_rules">rules here</string>
+</resources>

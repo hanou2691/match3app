@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.inf8405.match3app.match3app.MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:text="@string/menu_title"
+        android:textSize="30sp"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textView" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center">
+        <Button
+            android:text="@string/menu_demarrer"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:id="@+id/btn_demarrer"
+            android:onClick="start_listener"/>
+        <Button
+            android:text="@string/menu_regles"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:id="@+id/btn_regles"
+            android:onClick="rules_listener"/>
+        <Button
+            android:text="@string/menu_quitter"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"
+            android:id="@+id/btn_quitter"
+            android:onClick="quit_listener" />
+    </LinearLayout>
+
+</RelativeLayout>
