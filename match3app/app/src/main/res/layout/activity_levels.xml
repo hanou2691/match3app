@@ -29,7 +29,7 @@
             android:layout_margin="10dp"
             android:id="@+id/btn_level2"
             android:onClick="level2_listener"
-            android:clickable="false"/>
+            android:enabled="false"/>
         <Button
             android:text="@string/level_3"
             android:layout_width="200dp"
@@ -37,7 +37,7 @@
             android:layout_margin="10dp"
             android:id="@+id/btn_level3"
             android:onClick="level3_listener"
-            android:clickable="false"/>
+            android:enabled="false"/>
         <Button
             android:text="@string/level_4"
             android:layout_width="200dp"
@@ -45,7 +45,7 @@
             android:layout_margin="10dp"
             android:id="@+id/btn_level4"
             android:onClick="level4_listener"
-            android:clickable="false"/>
+            android:enabled="false"/>
         <Button
             android:text="@string/level_5"
             android:layout_width="200dp"
@@ -53,6 +53,6 @@
             android:layout_margin="10dp"
             android:id="@+id/btn_level5"
             android:onClick="level5_listener"
-            android:clickable="false"/>
+            android:enabled="false"/>
     </LinearLayout>
 </RelativeLayout>

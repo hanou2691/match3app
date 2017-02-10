@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_game"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,12 +11,61 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.inf8405.match3app.match3app.GameActivity">
 
-    <SurfaceView
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/game_score"
+        android:id="@+id/text_score"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/text_score"
+        android:id="@+id/edit_score"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_score"
+        android:text="@string/game_moves_left"
+        android:id="@+id/text_moves_left"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_score"
+        android:layout_toRightOf="@id/text_moves_left"
+        android:id="@+id/edit_moves_left"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_moves_left"
+        android:text="@string/game_target"
+        android:id="@+id/text_target"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_moves_left"
+        android:layout_toRightOf="@id/text_target"
+        android:id="@+id/edit_target"/>
+
+    <com.inf8405.match3app.match3app.GameView
         android:layout_width="match_parent"
+        android:layout_height="350dp"
+        android:layout_below="@id/text_target"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="15dp"
+        android:id="@+id/surfaceView" />
+
+    <Button
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="13dp"
-        android:layout_marginBottom="206dp"
-        android:id="@+id/surfaceView" />
+        android:layout_alignParentLeft="true"
+        android:text="@string/game_quit"
+        android:onClick="quit_handler"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:text="@string/game_joker"
+        android:onClick="joker_handler"/>
 </RelativeLayout>

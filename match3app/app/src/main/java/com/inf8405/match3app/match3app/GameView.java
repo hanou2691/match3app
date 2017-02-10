@@ -6,11 +6,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.widget.Toast;
+
+import static java.lang.Math.*;
 
 /**
  * Created by habenah on 2017-01-24.
@@ -24,8 +27,8 @@ public class GameView extends SurfaceView {
     Rect[][] cellMatrix;
     int[] colors = new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.CYAN, Color.YELLOW, Color.MAGENTA};
 
-    int x;
-    int y;
+    int dim_x = 0;
+    int dim_y = 0;
     int radius;
     int cellWidth;
     int cellHeight;
@@ -33,8 +36,11 @@ public class GameView extends SurfaceView {
     int height;
     Point center;
 
-    // Touch coordinates
-    float x1,y1,x2,y2;
+    // First touch pixel coordinates
+    float x1,y1;
+
+    // First touch matrix coordinates
+    int matX, matY;
 
     Context context;
 
@@ -44,13 +50,41 @@ public class GameView extends SurfaceView {
         Log.d("Constructor", "Start");
         context = context_;
 
-        x = ((GameActivity) context).x;
-        y = ((GameActivity) context).y;
+        dim_x = 10;//((GameActivity) context).x;
+        dim_y = 10;//((GameActivity) context).y;
 
         // Circle matrix
-        circleMatrix = new Circle[x][y];
-        cellMatrix = new Rect[x][y];
+        circleMatrix = new Circle[dim_x][dim_y];
+        cellMatrix = new Rect[dim_x][dim_y];
 
+        cellPaint = new Paint();
+        cellPaint.setColor(Color.WHITE);
+
+        cellPaint.setStyle(Paint.Style.STROKE);
+        cellPaint.setStrokeWidth(5.0f);
+
+        setWillNotDraw(false);
+
+        Log.d("Constructor", "Done");
+    }
+
+    public GameView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
+        // TODO Auto-generated constructor stub
+    }
+
+    public GameView(Context context_, AttributeSet attrs) {
+        super(context_, attrs);
+
+        Log.d("Constructor", "Start");
+        context = context_;
+
+        dim_x = ((GameActivity) context).x;
+        dim_y = ((GameActivity) context).y;
+
+        // Circle matrix
+        circleMatrix = new Circle[dim_x][dim_y];
+        cellMatrix = new Rect[dim_x][dim_y];
 
         cellPaint = new Paint();
         cellPaint.setColor(Color.WHITE);
@@ -71,18 +105,18 @@ public class GameView extends SurfaceView {
 
         width = w;
         height = h;
-        cellWidth = width / x;
-        cellHeight = height / y;
+        cellWidth = width / dim_x;
+        cellHeight = height / dim_y;
 
         radius = cellWidth < cellHeight ? cellWidth / 3 : cellHeight / 3;
 
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
+        for (int i = 0; i < dim_x; i++) {
+            for (int j = 0; j < dim_y; j++) {
                 // Create Circle
                 center = new Point((int) (cellWidth / 2.0) + (i * cellWidth), (int) (cellHeight / 2.0) + (j * cellHeight));
                 p = new Paint();
                 // TODO : Assign random color
-                p.setColor(colors[(int)(Math.random() * 6)]);
+                p.setColor(colors[(int)(random() * 6)]);
                 p.setStyle(Paint.Style.FILL);
                 p.setStrokeWidth(3.0f);
                 circleMatrix[i][j] = new Circle(radius, center, p);
@@ -102,11 +136,13 @@ public class GameView extends SurfaceView {
 
         super.onDraw(canvas);
 
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
+        for (int i = 0; i < dim_x; i++) {
+            for (int j = 0; j < dim_y; j++) {
                 canvas.drawRect(cellMatrix[i][j], cellPaint);
-                canvas.drawCircle(circleMatrix[i][j].center.x, circleMatrix[i][j].center.y,
+                if (circleMatrix[i][j] != null)
+                    canvas.drawCircle(circleMatrix[i][j].center.x, circleMatrix[i][j].center.y,
                         circleMatrix[i][j].radius, circleMatrix[i][j].p);
+
             }
         }
 
@@ -120,44 +156,105 @@ public class GameView extends SurfaceView {
             // when user first touches the screen we get x and y coordinate
             case MotionEvent.ACTION_UP:
             {
-                x2 = touchevent.getX();
-                y2 = touchevent.getY();
+                float x2 = touchevent.getX();
+                float y2 = touchevent.getY();
 
                 // TODO : Compare abs(x1 - x2) and abs(y1 - y2) to determine the main swipe direction
+                if(abs(x2 - x1) > abs(y2 - y1)){
+                    if (x1 < x2) {
+                        // Swipe Right
+                        Toast.makeText(context, "Swipe Right", Toast.LENGTH_SHORT).show();
+                        // Make sure the swipe is possible
+                        if (matX < (dim_x - 1)) {
+                            // Try to find matches
+                            Circle temp = circleMatrix[matX][matY];
+                            circleMatrix[matX][matY] = circleMatrix[matX + 1][matY];
+                            circleMatrix[matX + 1][matY] = temp;
 
-                // if left to right sweep event on screen
-                if (x1 < x2)
-                {
-                    Toast.makeText(context, "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
+                            // Try to find matches
+                            findMatchVertical(matX + 1, matY);
+                            findMatchVertical(matX, matY);
+                            // No combo, reset
+                        }
+                    }
+                    else {
+                        // Swipe Left
+                        Toast.makeText(context, "Swipe Left", Toast.LENGTH_SHORT).show();
+                        // Make sure the swipe is possible
+                        if (matX > 0 ) {
+                            Circle temp = circleMatrix[matX][matY];
+                            circleMatrix[matX][matY] = circleMatrix[matX - 1][matY];
+                            circleMatrix[matX - 1][matY] = temp;
+                        }
+                    }
+                }
+                else { // Vertical swipe
+                    if (y1 < y2) {
+                        // Swipe Down
+                        Toast.makeText(context, "Swipe Down", Toast.LENGTH_SHORT).show();
+                        if (matY < (dim_y - 1)){
+                            Circle temp = circleMatrix[matX][matY];
+                            circleMatrix[matX][matY] = circleMatrix[matX][matY + 1];
+                            circleMatrix[matX][matY + 1] = temp;
+                        }
+
+                    }
+                    else {
+                        // Swipe Up
+                        Toast.makeText(context, "Swipe Up", Toast.LENGTH_SHORT).show();
+                        if (matY > 0) {
+                            Circle temp = circleMatrix[matX][matY];
+                            circleMatrix[matX][matY] = circleMatrix[matX][matY - 1];
+                            circleMatrix[matX][matY - 1] = temp;
+                        }
+                    }
                 }
 
-                // if right to left sweep event on screen
-                if (x1 > x2)
-                {
-                    Toast.makeText(context, "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
-                }
-
-                // if UP to Down sweep event on screen
-                if (y1 < y2)
-                {
-                    Toast.makeText(context, "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
-                }
-
-                // if Down to UP sweep event on screen
-                if (y1 > y2)
-                {
-                    Toast.makeText(context, "Down to UP Swap Performed", Toast.LENGTH_LONG).show();
-                }
                 break;
             }
             case MotionEvent.ACTION_DOWN:
             {
                 x1 = touchevent.getX();
                 y1 = touchevent.getY();
+
+                // find in matrix
+                matX = (int) (x1 / cellWidth);
+                matY = (int) (y1 / cellHeight);
+
                 break;
             }
         }
         return true;
-        //return super.onTouchEvent(touchevent);
+    }
+
+    private void findMatchVertical(int x, int y) {
+        int matchCount = 1;
+        int colorToMatch = circleMatrix[x][y].p.getColor();
+
+        int i,j;
+        // Run upwards
+        for (i = y; i > 0; i--) {
+            if (circleMatrix[x][i].p.getColor() != colorToMatch) {
+                break;
+            }
+
+            matchCount++;
+        }
+
+        // Run downwards
+        for (j = y; j < dim_y; j++) {
+            if (circleMatrix[x][j].p.getColor() != colorToMatch) {
+                break;
+            }
+
+            matchCount++;
+        }
+
+        // Have enough matches
+        if (matchCount >= 3) {
+            for (int k = i; k < j; k++) {
+                circleMatrix[x][k] = null;
+            }
+        }
     }
 }

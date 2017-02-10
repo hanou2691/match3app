@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Xml;
+import android.view.View;
 import android.widget.GridView;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -39,8 +40,7 @@ public class GameActivity extends AppCompatActivity {
         }
 
         // Create the game view
-        GameView view = new GameView(this);
-        setContentView(view);
+        setContentView(R.layout.activity_game);
     }
 
     public void readConfig() throws XmlPullParserException {
@@ -75,5 +75,13 @@ public class GameActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void quit_handler(View view) {
+        finish();
+    }
+
+    public void joker_handler(View view) {
+        // TODO
     }
 }
