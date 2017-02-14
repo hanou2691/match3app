@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +29,7 @@ public class GameView extends SurfaceView {
     Rect[][] cellMatrix;
 
     Thread comboThread;
+    ComboThread comboRunnable;
 
     public static int dim_x = 0;
     public static int dim_y = 0;
@@ -44,26 +46,6 @@ public class GameView extends SurfaceView {
 
     public GameView(Context context_) {
         super(context_);
-
-        Log.d("Constructor", "Start");
-        context = context_;
-
-        dim_x = 1;
-        dim_y = 1;
-
-        // Circle matrix
-        circleMatrix = new Circle[dim_x][dim_y];
-        cellMatrix = new Rect[dim_x][dim_y];
-
-        cellPaint = new Paint();
-        cellPaint.setColor(Color.WHITE);
-
-        cellPaint.setStyle(Paint.Style.STROKE);
-        cellPaint.setStrokeWidth(5.0f);
-
-        setWillNotDraw(false);
-
-        Log.d("Constructor", "Done");
     }
 
     public GameView(Context context, AttributeSet attrs, int defStyle) {
@@ -73,11 +55,10 @@ public class GameView extends SurfaceView {
     public GameView(Context context_, AttributeSet attrs) {
         super(context_, attrs);
 
-        Log.d("Constructor", "Start");
         context = context_;
 
-        dim_x = ((GameActivity) context).x;
-        dim_y = ((GameActivity) context).y;
+        dim_x = ((GameActivity) context).levelConfig.x;
+        dim_y = ((GameActivity) context).levelConfig.y;
 
         // Circle matrix
         circleMatrix = new Circle[dim_y][dim_x];
@@ -85,7 +66,6 @@ public class GameView extends SurfaceView {
 
         cellPaint = new Paint();
         cellPaint.setColor(Color.WHITE);
-
         cellPaint.setStyle(Paint.Style.STROKE);
         cellPaint.setStrokeWidth(5.0f);
 
@@ -118,8 +98,17 @@ public class GameView extends SurfaceView {
         }
 
         // Start combo thread
-        comboThread = new ComboThread("ComboThread");
-        //comboThread.start();
+        comboRunnable = new ComboThread("ComboRunnable");
+        comboThread = new Thread(comboRunnable);
+        comboThread.start();
+    }
+
+    public void resetCircleMatrix() {
+        for (int i = 0; i < dim_y; i++) {
+            for (int j = 0; j < dim_x; j++) {
+                circleMatrix[i][j].p.setColor(GameActivity.colors[i * dim_x + j]);
+            }
+        }
     }
 
     @Override
@@ -129,7 +118,7 @@ public class GameView extends SurfaceView {
         for (int i = 0; i < dim_y; i++) {
             for (int j = 0; j < dim_x; j++) {
                 canvas.drawRect(cellMatrix[i][j], cellPaint);
-                //if (circleMatrix[i][j] != null)
+                if (circleMatrix[i][j] != null)
                     canvas.drawCircle(circleMatrix[i][j].center.x, circleMatrix[i][j].center.y,
                         circleMatrix[i][j].radius, circleMatrix[i][j].p);
             }
@@ -145,11 +134,7 @@ public class GameView extends SurfaceView {
             case MotionEvent.ACTION_UP:
             {
                 // Stop combo thread
-                /*try {
-                    comboThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
+                comboRunnable.pauseThread();
 
                 // Get second
                 float x2 = touchevent.getX();
@@ -168,8 +153,8 @@ public class GameView extends SurfaceView {
                             circleMatrix[matY][matX + 1].p.setColor(temp_color);
 
                             // Try to find matches
-                            if (!(findMatchVertical(matX + 1, matY) || findMatchVertical(matX, matY) ||
-                                    findMatchHorizontal(matX + 1, matY) || findMatchHorizontal(matX,matY))) {
+                            if (!(findMatchVertical(matX + 1, matY,false) || findMatchVertical(matX, matY,false) ||
+                                    findMatchHorizontal(matX + 1, matY,false) || findMatchHorizontal(matX,matY,false))) {
                                 // Invalid move
                                 circleMatrix[matY][matX + 1].p.setColor(circleMatrix[matY][matX].p.getColor());
                                 circleMatrix[matY][matX].p.setColor(temp_color);
@@ -186,8 +171,8 @@ public class GameView extends SurfaceView {
                             circleMatrix[matY][matX - 1].p.setColor(temp_color);
 
                             // Try to find matches
-                            if (!(findMatchVertical(matX - 1, matY) || findMatchVertical(matX, matY) ||
-                                    findMatchHorizontal(matX - 1, matY) || findMatchHorizontal(matX,matY))) {
+                            if (!(findMatchVertical(matX - 1, matY,false) || findMatchVertical(matX, matY,false) ||
+                                    findMatchHorizontal(matX - 1, matY,false) || findMatchHorizontal(matX,matY,false))) {
                                 // Ivalid move
                                 circleMatrix[matY][matX - 1].p.setColor(circleMatrix[matY][matX].p.getColor()) ;
                                 circleMatrix[matY][matX].p.setColor(temp_color);
@@ -204,8 +189,8 @@ public class GameView extends SurfaceView {
                             circleMatrix[matY][matX].p.setColor(circleMatrix[matY + 1][matX].p.getColor()) ;
                             circleMatrix[matY + 1][matX].p.setColor(temp_color);
 
-                            if(!(findMatchVertical(matX, matY + 1) || findMatchVertical(matX, matY) ||
-                                    findMatchHorizontal(matX, matY + 1) || findMatchHorizontal(matX,matY))){
+                            if(!(findMatchVertical(matX, matY + 1,false) || findMatchVertical(matX, matY,false) ||
+                                    findMatchHorizontal(matX, matY + 1,false) || findMatchHorizontal(matX,matY,false))){
                                 // Ivalid move
                                 circleMatrix[matY + 1][matX].p.setColor(circleMatrix[matY][matX].p.getColor()) ;
                                 circleMatrix[matY][matX].p.setColor(temp_color);
@@ -219,8 +204,8 @@ public class GameView extends SurfaceView {
                             int temp_color = circleMatrix[matY][matX].p.getColor();
                             circleMatrix[matY][matX].p.setColor(circleMatrix[matY - 1][matX].p.getColor()) ;
                             circleMatrix[matY - 1][matX].p.setColor(temp_color);
-                            if(!(findMatchVertical(matX, matY - 1) ||  findMatchVertical(matX, matY) ||
-                                    findMatchHorizontal(matX, matY - 1) || findMatchHorizontal(matX,matY))){
+                            if(!(findMatchVertical(matX, matY - 1,false) ||  findMatchVertical(matX, matY,false) ||
+                                    findMatchHorizontal(matX, matY - 1,false) || findMatchHorizontal(matX,matY,false))){
                                 // Ivalid move
                                 circleMatrix[matY -1][matX].p.setColor(circleMatrix[matY][matX].p.getColor()) ;
                                 circleMatrix[matY][matX].p.setColor(temp_color);
@@ -230,7 +215,8 @@ public class GameView extends SurfaceView {
                 }
 
                 // Restart combo thread
-                //comboThread.run();
+                comboRunnable.resumeThread();
+
                 break;
             }
             case MotionEvent.ACTION_DOWN:
@@ -249,7 +235,7 @@ public class GameView extends SurfaceView {
         return true;
     }
 
-    public static boolean findMatchVertical(int x, int y) {
+    public static boolean findMatchVertical(int x, int y, boolean inCombo) {
         int matchCount = 1;
         int colorToMatch = circleMatrix[y][x].p.getColor();
 
@@ -287,15 +273,20 @@ public class GameView extends SurfaceView {
                     circleMatrix[k - matchCount][x].p.setColor(rand_color);
                 }
             }
+            if(!inCombo){
+                ((GameActivity) context).calculateScore(matchCount);
+            }
+            else{
+                ((GameActivity) context).calculateComboScore(matchCount);
+            }
 
-            ((GameActivity) context).calculateScore(matchCount);
             return true;
         }
 
         return false;
     }
 
-    public static boolean findMatchHorizontal(int x, int y) {
+    public static boolean findMatchHorizontal(int x, int y, boolean inCombo) {
         int matchCount = 1;
         int colorToMatch = circleMatrix[y][x].p.getColor();
 
@@ -337,15 +328,16 @@ public class GameView extends SurfaceView {
                     }
                 }
             }
+            if (!inCombo){
+                ((GameActivity) context).calculateScore(matchCount);
+            }
+            else{
+                ((GameActivity) context).calculateComboScore(matchCount);
+            }
 
-            ((GameActivity) context).calculateScore(matchCount);
             return true;
         }
 
         return false;
-    }
-    public void moveToNextLevel(int score){
-
-
     }
 }

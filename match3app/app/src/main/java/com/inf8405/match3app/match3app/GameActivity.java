@@ -1,7 +1,9 @@
 package com.inf8405.match3app.match3app;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Xml;
@@ -27,16 +29,16 @@ public class GameActivity extends AppCompatActivity {
 
     public static int[] colors;
 
-    public String level;
-    public int nbMoves;
-    public int targetScore;
-    public int x;
-    public int y;
+    public LevelConfig levelConfig;
+
+    public int nbMovesLeft;
     public static int totalScore;
 
     public TextView scoreTV;
     public TextView movesLeftTV;
     public TextView targetScoreTV;
+
+    int comboCounter = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,29 +47,22 @@ public class GameActivity extends AppCompatActivity {
         // Load colors from colors.xml
         loadColors();
 
-        // Get selected level
+        // Get selected level and its attributes
         Intent i = getIntent();
-        level = i.getStringExtra("level");
+        levelConfig = (LevelConfig) i.getSerializableExtra("level_config");
 
         // Load selected level colors
-        switch (level){
-            case "1": loadLevelOne();
+        switch (levelConfig.level){
+            case 1: loadLevelOne();
                 break;
-            case "2": loadLevelTwo();
+            case 2: loadLevelTwo();
                 break;
-            case "3": loadLevelThree();
+            case 3: loadLevelThree();
                 break;
-            case "4": loadLevelFour();
+            case 4: loadLevelFour();
                 break;
             default:
                 loadLevelOne();
-        }
-
-        // Read config from XML
-        try {
-            readConfig();
-        } catch (XmlPullParserException e) {
-            e.printStackTrace();
         }
 
         // Initiate the score
@@ -134,42 +129,58 @@ public class GameActivity extends AppCompatActivity {
         };
     }
 
-    public void readConfig() throws XmlPullParserException {
-        try {
-            InputStream is = getResources().openRawResource(R.raw.levels_configuration);
-            XmlPullParser xpp = Xml.newPullParser();
-            xpp.setInput(is, null);
-
-            int event = xpp.getEventType();
-            while (event != XmlPullParser.END_DOCUMENT) {
-                switch (event){
-                    case XmlPullParser.START_TAG:{
-                        String id = xpp.getAttributeValue(null,"id");
-                        if (id != null && id.equals(level)){
-                            nbMoves = Integer.valueOf(xpp.getAttributeValue(null,"nb_moves"));
-                            targetScore = Integer.valueOf(xpp.getAttributeValue(null,"target_score"));
-                            x = Integer.valueOf(xpp.getAttributeValue(null,"x"));
-                            y = Integer.valueOf(xpp.getAttributeValue(null,"y"));
-                            return;
+    public void messageEndLevel(String message ,final String title){
+        final AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        dlgAlert.setMessage(message);
+        dlgAlert.setTitle(title);
+        dlgAlert.setPositiveButton("OK", null);
+        dlgAlert.setNegativeButton("Cancel",null);
+        dlgAlert.setCancelable(true);
+        dlgAlert.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(title == "Success"){
+                            loadNextLevel();
+                        }
+                        else {
+                            initializeGrid();
+                            initializeViews();
                         }
                     }
-                        break;
-                    default:
-                        break;
-                }
-                event = xpp.next();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+                });
+        dlgAlert.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        dlgAlert.create().show();
     }
 
     public void quit_handler(View view) {
-        finish();
+        final AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        dlgAlert.setMessage("Do you really want to quit the game?");
+        dlgAlert.setTitle("Quit");
+        dlgAlert.setPositiveButton("OK", null);
+        dlgAlert.setNegativeButton("Cancel",null);
+        dlgAlert.setCancelable(true);
+        dlgAlert.setPositiveButton("Ok",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                });
+        dlgAlert.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        dlgAlert.create().show();
     }
 
     public void joker_handler(View view) {
-        // TODO
+        initializeGrid();
     }
 
     public void initializeViews() {
@@ -178,17 +189,21 @@ public class GameActivity extends AppCompatActivity {
         movesLeftTV = (TextView) findViewById(R.id.edit_moves_left);
         targetScoreTV = (TextView) findViewById(R.id.edit_target);
 
-        scoreTV.setText(String.valueOf(totalScore));
-        movesLeftTV.setText(String.valueOf(nbMoves));
-        targetScoreTV.setText(String.valueOf(targetScore));
+        scoreTV.setText(String.valueOf(0));
+        movesLeftTV.setText(String.valueOf(levelConfig.initialNbMoves));
+        targetScoreTV.setText(String.valueOf(levelConfig.targetScore));
+
+        totalScore = 0;
+        nbMovesLeft = levelConfig.initialNbMoves;
     }
 
     public void updateViews() {
         scoreTV.setText(String.valueOf(totalScore));
-        movesLeftTV.setText(String.valueOf(nbMoves));
+        movesLeftTV.setText(String.valueOf(nbMovesLeft));
     }
 
     public void calculateScore(int matchCount) {
+        comboCounter = 2;
         switch(matchCount){
             case 3:
                 totalScore += 100;
@@ -202,49 +217,104 @@ public class GameActivity extends AppCompatActivity {
         }
 
         // Decrement remaining moves
-        nbMoves--;
+        nbMovesLeft--;
 
-        if (totalScore >= targetScore) {
-            // Load next level
-            loadNextLevel();
-        }
-        else if (nbMoves == 0) {
-            // Game over
-            gameOver();
+        if (nbMovesLeft == 0) {
+            if (totalScore >= levelConfig.targetScore) {
+                // Load next level
+                messageEndLevel("Congratulations! Do you want to move to the next level?", "Success");
+            }
+            else {
+                // Game over
+                messageEndLevel("Sorry! Do you want to restart the level?", "Failure");
+            }
         }
 
         // Update score and moves views
         updateViews();
     }
 
-    public void gameOver() {
-        finish();
+    public void calculateComboScore(int matchCount) {
+        switch(matchCount){
+            case 3:
+                totalScore += 100 * comboCounter;
+                break;
+            case 4:
+                totalScore += 200 * comboCounter;
+                break;
+            case 5:
+                totalScore += 300 * comboCounter;
+                break;
+        }
+
+        comboCounter++;
+
+        // Update score and moves views
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                updateViews();
+            }
+        });
     }
 
+
     public void loadNextLevel() {
-        Intent i = new Intent(this, GameActivity.class);
-        Button btn = new Button(this);
-        int nextLevel = Integer.valueOf(level) + 1;
-        if (nextLevel < 4){
-            i.putExtra("level",String.valueOf(nextLevel));
-            switch (nextLevel) {
-                case 2:
-                    btn = (Button)findViewById(R.id.btn_level2);
+        if (++levelConfig.level < 5){
+            // Edit level state
+            ((Globals)getApplication()).locks[levelConfig.level - 2] = false;
 
-                    break;
-                case 3 :
-                    btn = (Button)findViewById(R.id.btn_level3);
-                    break;
-                case 4 :
-                    btn = (Button)findViewById(R.id.btn_level4);
-                    break;
+            // Start activity
+            Intent i = new Intent(this, GameActivity.class);
+            InputStream is = getResources().openRawResource(R.raw.levels_configuration);
+            try {
+                // Stop drawing preview grid
+                GameView view = (GameView) findViewById(R.id.game_view);
+                view.setWillNotDraw(true);
+                view.comboRunnable.pauseThread();
+                view.comboThread.interrupt();
+
+                // Load new activity
+                LevelConfig nextLevelConfig = LevelsActivity.readLevelConfig(is, levelConfig.level);
+                i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                i.putExtra("level_config", nextLevelConfig);
+                startActivity(i);
+                finish();
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
             }
-
-            btn.setEnabled(true);
-            startActivity(i);
         }
         else {
-            Toast.makeText(this, "congratulations!", Toast.LENGTH_SHORT);
+            // The game is over
+            Toast.makeText(this, "congratulations!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public void initializeGrid(){
+        switch(levelConfig.level){
+            case 1:
+                loadLevelOne();
+                break;
+            case 2:
+                loadLevelTwo();
+                break;
+            case 3:
+                loadLevelThree();
+                break;
+            case 4:
+                loadLevelFour();
+                break;
+            default:
+                loadLevelOne();
+        }
+
+        // Reset circle matrix in GameView
+        GameView view = (GameView) findViewById(R.id.game_view);
+        view.resetCircleMatrix();
+    }
+
+    public void restart_handler(View view) {
+        initializeGrid();
+        initializeViews();
     }
 }

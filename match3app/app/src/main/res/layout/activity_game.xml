@@ -52,7 +52,7 @@
         android:layout_below="@id/text_target"
         android:layout_centerInParent="true"
         android:layout_marginTop="15dp"
-        android:id="@+id/surfaceView" />
+        android:id="@+id/game_view" />
 
     <Button
         android:layout_width="wrap_content"
@@ -65,7 +65,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:layout_centerInParent="true"
+        android:text="Restart"
+        android:onClick="restart_handler"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:text="@string/game_joker"
         android:onClick="joker_handler"/>
+
 </RelativeLayout>
