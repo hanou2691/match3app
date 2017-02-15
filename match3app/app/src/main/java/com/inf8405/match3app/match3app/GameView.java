@@ -7,11 +7,8 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
-import android.widget.TabHost;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import static java.lang.Math.*;
@@ -29,10 +26,11 @@ public class GameView extends SurfaceView {
     Rect[][] cellMatrix;
 
     Thread comboThread;
-    ComboThread comboRunnable;
+    ComboRunnable comboRunnable;
 
     public static int dim_x = 0;
     public static int dim_y = 0;
+
     int cellWidth;
     int cellHeight;
 
@@ -42,7 +40,7 @@ public class GameView extends SurfaceView {
     // First touch matrix coordinates
     int matX, matY;
 
-    static Context context;
+    Context context;
 
     public GameView(Context context_) {
         super(context_);
@@ -98,7 +96,8 @@ public class GameView extends SurfaceView {
         }
 
         // Start combo thread
-        comboRunnable = new ComboThread("ComboRunnable");
+        GameView view = (GameView) findViewById(R.id.game_view);
+        comboRunnable = new ComboRunnable(view);
         comboThread = new Thread(comboRunnable);
         comboThread.start();
     }
@@ -235,7 +234,7 @@ public class GameView extends SurfaceView {
         return true;
     }
 
-    public static boolean findMatchVertical(int x, int y, boolean inCombo) {
+    public boolean findMatchVertical(int x, int y, boolean inCombo) {
         int matchCount = 1;
         int colorToMatch = circleMatrix[y][x].p.getColor();
 
@@ -286,7 +285,7 @@ public class GameView extends SurfaceView {
         return false;
     }
 
-    public static boolean findMatchHorizontal(int x, int y, boolean inCombo) {
+    public boolean findMatchHorizontal(int x, int y, boolean inCombo) {
         int matchCount = 1;
         int colorToMatch = circleMatrix[y][x].p.getColor();
 

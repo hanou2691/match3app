@@ -4,11 +4,15 @@ package com.inf8405.match3app.match3app;
  * Created by habenah on 2017-02-11.
  */
 
-class ComboThread implements Runnable {
+class ComboRunnable implements Runnable {
+    private final int SLEEP_DURATION_MS = 100;
+    private final int SLEEP_DURATION_NS = 0;
+
     private boolean running = true;
+    private GameView view;
 
-    ComboThread(String name){
-
+    ComboRunnable(GameView v){
+        view = v;
     }
 
     @Override
@@ -19,10 +23,10 @@ class ComboThread implements Runnable {
             for (int i = 0; i < GameView.dim_y ; i++) {
                 for (int j = 0; j < GameView.dim_x; j++) {
                     if (running) {
-                        GameView.findMatchHorizontal(j,i,true);
-                        GameView.findMatchVertical(j,i,true);
+                        view.findMatchHorizontal(j,i,true);
+                        view.findMatchVertical(j,i,true);
                         try {
-                            Thread.sleep(100,0);
+                            Thread.sleep(SLEEP_DURATION_MS, SLEEP_DURATION_NS);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }

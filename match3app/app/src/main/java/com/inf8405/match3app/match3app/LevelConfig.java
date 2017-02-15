@@ -20,12 +20,4 @@ class LevelConfig implements Serializable {
         this.x = 0;
         this.y = 0;
     }
-
-    public LevelConfig(int level, int initialNbMoves, int targetScore, int x, int y) {
-        this.level = level;
-        this.initialNbMoves = initialNbMoves;
-        this.targetScore = targetScore;
-        this.x = x;
-        this.y = y;
-    }
 }
