@@ -9,7 +9,19 @@
     <string name="level_3">Level 3</string>
     <string name="level_4">Level 4</string>
     <string name="level_5">Level 5</string>
-    <string name="text_rules">rules here</string>
+    <string name="text_rules">- The player can Choose  the level at the launch of the application.
+- The player can also give up at this phase and quit the game.
+- When the level is won, the app will suggest to move to the next level.
+- The user can navigate and return to levels already played
+- The user has only access to unlocked levels
+- It is possible to quit the game at any time thanks to « quit » button 
+- The restart button is used to reset an active game .
+- The Joker button is used to reset the grid while keeping the score and the number of remaining moves (this will be useful in case No exchange is possible).
+- Item place exchanges are made by sliding the finger on the screen.Exchange is possible only vertically or horizontally
+- The exchange makes it possible to form a group of 3 identical items aligned vertically or horizontally. In the contrary case, the exchange is forbidden or must be canceled 
+- If two (or more) groups are deleted at the same time, the score reported by the hit is the addition of scores reported by each group
+
+</string>
     <string name="game_score">Score : </string>
     <string name="game_moves_left">Moves left : </string>
     <string name="game_target">Target score : </string>
